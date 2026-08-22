@@ -105,6 +105,7 @@ function AppContent() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   const isInitialMessagesLoad = useRef(true);
+  const prevMessagesCount = useRef(0);
 
   // Synchronize Firebase Authentication state
   useEffect(() => {
@@ -177,23 +178,22 @@ function AppContent() {
   // Real-time Firestore Listener for incoming customer email/contact form submissions
   useEffect(() => {
     const unsubscribe = subscribeToContactSubmissions((latestSubmissions) => {
-      setMessages((prev) => {
-        // If not initial load and a brand new inquiry arrived, show real-time alert toast!
-        if (!isInitialMessagesLoad.current && latestSubmissions.length > prev.length) {
-          const newest = latestSubmissions[0];
-          if (newest && !newest.isRead) {
-            toast.emailAlert(
-              `📬 New Client Inquiry from ${newest.name}`,
-              `${newest.subject || 'Project Inquiry'}: "${newest.message.substring(0, 80)}${newest.message.length > 80 ? '...' : ''}"`,
-              () => {
-                setAdminTab('messages');
-              }
-            );
-          }
+      // If not initial load and a brand new inquiry arrived, show real-time alert toast!
+      if (!isInitialMessagesLoad.current && latestSubmissions.length > prevMessagesCount.current) {
+        const newest = latestSubmissions[0];
+        if (newest && !newest.isRead) {
+          toast.emailAlert(
+            `📬 New Client Inquiry from ${newest.name}`,
+            `${newest.subject || 'Project Inquiry'}: "${newest.message.substring(0, 80)}${newest.message.length > 80 ? '...' : ''}"`,
+            () => {
+              setAdminTab('messages');
+            }
+          );
         }
-        isInitialMessagesLoad.current = false;
-        return latestSubmissions;
-      });
+      }
+      isInitialMessagesLoad.current = false;
+      prevMessagesCount.current = latestSubmissions.length;
+      setMessages(latestSubmissions);
     });
 
     return () => unsubscribe();
