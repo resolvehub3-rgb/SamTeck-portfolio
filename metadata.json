@@ -1,0 +1,6 @@
+{
+  "name": "SamTeck Digital - SaaS Portfolio Platform",
+  "description": "Production full-stack developer portfolio and content management system for SamTeck Digital with dynamic project showcase, achievements timeline, and administrative control.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

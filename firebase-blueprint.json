@@ -1,0 +1,165 @@
+{
+  "entities": {
+    "Profile": {
+      "title": "Profile",
+      "description": "Developer profile information for SamTeck Digital",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "title": { "type": "string" },
+        "bio": { "type": "string" },
+        "email": { "type": "string" },
+        "phone": { "type": "string" },
+        "location": { "type": "string" },
+        "openToWork": { "type": "boolean" },
+        "profileImageUrl": { "type": "string" },
+        "aboutImageUrl": { "type": "string" },
+        "cvUrl": { "type": "string" },
+        "yearsExperience": { "type": "string" },
+        "projectsCompleted": { "type": "string" },
+        "happyClients": { "type": "string" }
+      },
+      "required": ["name", "title", "email"]
+    },
+    "Service": {
+      "title": "Service",
+      "description": "Services offered by SamTeck Digital",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "iconName": { "type": "string" },
+        "displayOrder": { "type": "number" },
+        "isActive": { "type": "boolean" }
+      },
+      "required": ["title", "description", "displayOrder"]
+    },
+    "Project": {
+      "title": "Project",
+      "description": "Portfolio projects showcase",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "slug": { "type": "string" },
+        "shortDescription": { "type": "string" },
+        "longDescription": { "type": "string" },
+        "projectImage": { "type": "string" },
+        "category": { "type": "string" },
+        "technologies": { "type": "array" },
+        "liveUrl": { "type": "string" },
+        "githubUrl": { "type": "string" },
+        "isFeatured": { "type": "boolean" },
+        "displayOrder": { "type": "number" },
+        "problem": { "type": "string" },
+        "solution": { "type": "string" },
+        "features": { "type": "array" },
+        "role": { "type": "string" },
+        "results": { "type": "string" }
+      },
+      "required": ["name", "slug", "shortDescription", "category"]
+    },
+    "Achievement": {
+      "title": "Achievement",
+      "description": "Career milestones and achievements timeline",
+      "type": "object",
+      "properties": {
+        "year": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "iconName": { "type": "string" },
+        "displayOrder": { "type": "number" }
+      },
+      "required": ["year", "title", "description", "displayOrder"]
+    },
+    "Testimonial": {
+      "title": "Testimonial",
+      "description": "Client testimonials and reviews",
+      "type": "object",
+      "properties": {
+        "clientName": { "type": "string" },
+        "clientRole": { "type": "string" },
+        "company": { "type": "string" },
+        "profileImage": { "type": "string" },
+        "testimonialText": { "type": "string" },
+        "rating": { "type": "number" },
+        "isFeatured": { "type": "boolean" },
+        "displayOrder": { "type": "number" }
+      },
+      "required": ["clientName", "testimonialText", "rating"]
+    },
+    "Faq": {
+      "title": "FAQ",
+      "description": "Frequently asked questions",
+      "type": "object",
+      "properties": {
+        "question": { "type": "string" },
+        "answer": { "type": "string" },
+        "displayOrder": { "type": "number" },
+        "isActive": { "type": "boolean" }
+      },
+      "required": ["question", "answer", "displayOrder"]
+    },
+    "ContactSubmission": {
+      "title": "Contact Submission",
+      "description": "Form submissions from website visitors",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "phone": { "type": "string" },
+        "subject": { "type": "string" },
+        "message": { "type": "string" },
+        "isRead": { "type": "boolean" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["name", "email", "message"]
+    },
+    "SiteSettings": {
+      "title": "Site Settings",
+      "description": "Global website configurations",
+      "type": "object",
+      "properties": {
+        "brandName": { "type": "string" },
+        "siteTitle": { "type": "string" },
+        "metaDescription": { "type": "string" },
+        "copyrightText": { "type": "string" },
+        "valueIndicators": { "type": "array" },
+        "socialLinks": { "type": "array" }
+      }
+    }
+  },
+  "firestore": {
+    "/profile/{profileId}": {
+      "schema": "Profile",
+      "description": "Developer profile document"
+    },
+    "/services/{serviceId}": {
+      "schema": "Service",
+      "description": "Services offered"
+    },
+    "/projects/{projectId}": {
+      "schema": "Project",
+      "description": "Portfolio projects"
+    },
+    "/achievements/{achievementId}": {
+      "schema": "Achievement",
+      "description": "Timeline milestones"
+    },
+    "/testimonials/{testimonialId}": {
+      "schema": "Testimonial",
+      "description": "Client reviews"
+    },
+    "/faqs/{faqId}": {
+      "schema": "Faq",
+      "description": "FAQs"
+    },
+    "/contact_submissions/{submissionId}": {
+      "schema": "ContactSubmission",
+      "description": "Contact form submissions"
+    },
+    "/site_settings/{settingId}": {
+      "schema": "SiteSettings",
+      "description": "Site configuration settings"
+    }
+  }
+}
