@@ -231,7 +231,8 @@ function AppContent() {
       toast.success('Profile saved successfully', 'Public portfolio bio, titles, and social links updated.');
     } catch (err) {
       console.error('Failed to save profile:', err);
-      toast.error('Save failed', 'Could not update profile information.');
+      const msg = err instanceof Error ? err.message : 'Unknown error';
+      toast.error('Save failed', `Could not update profile: ${msg}`);
     }
   };
 

@@ -39,6 +39,10 @@ export const AdminProfile: React.FC<AdminProfileProps> = ({ profile, onSave }) =
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>, field: 'profileImageUrl' | 'aboutImageUrl') => {
     const file = e.target.files?.[0];
     if (file) {
+      if (file.size > 500 * 1024) {
+        alert('Image is too large for Firestore (max ~500KB). Please use a smaller image or provide a URL instead.');
+        return;
+      }
       const reader = new FileReader();
       reader.onloadend = () => {
         if (typeof reader.result === 'string') {
