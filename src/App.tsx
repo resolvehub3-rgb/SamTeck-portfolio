@@ -1,16 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { onAuthStateChanged, signOut, User } from 'firebase/auth';
 import { auth } from './lib/firebase';
 import { 
-  getProfile, 
-  getServices, 
-  getProjects, 
-  getAchievements, 
-  getTestimonials, 
-  getFaqs, 
-  getSiteSettings, 
-  getContactSubmissions,
+  subscribeToProfile,
+  subscribeToServices,
+  subscribeToProjects,
+  subscribeToAchievements,
+  subscribeToTestimonials,
+  subscribeToFaqs,
+  subscribeToSiteSettings,
   subscribeToContactSubmissions,
   saveContactSubmission,
   updateProfile,
@@ -30,15 +29,6 @@ import {
   seedDatabaseIfEmpty
 } from './services/portfolioService';
 import { 
-  defaultProfile, 
-  defaultServices, 
-  defaultProjects, 
-  defaultAchievements, 
-  defaultTestimonials, 
-  defaultFaqs, 
-  defaultSiteSettings 
-} from './services/defaultData';
-import { 
   Profile, 
   Service, 
   Project, 
@@ -48,6 +38,15 @@ import {
   SiteSettings, 
   ContactSubmission 
 } from './types';
+import { 
+  defaultProfile, 
+  defaultServices, 
+  defaultProjects, 
+  defaultAchievements, 
+  defaultTestimonials, 
+  defaultFaqs, 
+  defaultSiteSettings 
+} from './services/defaultData';
 
 // Context
 import { ToastProvider, useToast } from './context/ToastContext';
@@ -80,8 +79,9 @@ import { AdminSettings } from './components/Admin/AdminSettings';
 
 function AppContent() {
   const toast = useToast();
+  const navigate = useNavigate();
 
-  // State for all portfolio models
+  // State for all portfolio models (default data as fallback, overwritten by Firestore real-time listeners)
   const [profile, setProfile] = useState<Profile>(defaultProfile);
   const [services, setServices] = useState<Service[]>(defaultServices);
   const [projects, setProjects] = useState<Project[]>(defaultProjects);
@@ -132,47 +132,26 @@ function AppContent() {
     return () => unsubscribe();
   }, []);
 
-  // Load all initial data from Firestore / Database
-  const loadPortfolioData = async () => {
-    try {
-      setIsLoading(true);
-      const [
-        profileData,
-        servicesData,
-        projectsData,
-        achievementsData,
-        testimonialsData,
-        faqsData,
-        settingsData,
-        messagesData,
-      ] = await Promise.all([
-        getProfile(),
-        getServices(),
-        getProjects(),
-        getAchievements(),
-        getTestimonials(),
-        getFaqs(),
-        getSiteSettings(),
-        getContactSubmissions(),
-      ]);
-
-      if (profileData) setProfile(profileData);
-      if (servicesData.length > 0) setServices(servicesData);
-      if (projectsData.length > 0) setProjects(projectsData);
-      if (achievementsData.length > 0) setAchievements(achievementsData);
-      if (testimonialsData.length > 0) setTestimonials(testimonialsData);
-      if (faqsData.length > 0) setFaqs(faqsData);
-      if (settingsData) setSettings(settingsData);
-      if (messagesData) setMessages(messagesData);
-    } catch (err) {
-      console.warn('Using default showcase dataset:', err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
+  // Real-time Firestore listeners for all collections
   useEffect(() => {
-    loadPortfolioData();
+    const unsubscribers = [
+      subscribeToProfile((data) => {
+        if (data) setProfile(data);
+        setIsLoading(false);
+      }),
+      subscribeToServices(setServices),
+      subscribeToProjects(setProjects),
+      subscribeToAchievements(setAchievements),
+      subscribeToTestimonials(setTestimonials),
+      subscribeToFaqs(setFaqs),
+      subscribeToSiteSettings((data) => {
+        if (data) setSettings(data);
+      }),
+    ];
+
+    return () => {
+      unsubscribers.forEach((unsub) => unsub());
+    };
   }, []);
 
   // Real-time Firestore Listener for incoming customer email/contact form submissions
@@ -221,18 +200,19 @@ function AppContent() {
       sessionStorage.removeItem('samteck_admin_session');
       setCurrentUser(null);
       toast.info('Signed Out', 'You have been logged out of the Admin Console.');
+      navigate('/');
     } catch (err) {
       console.error('Firebase signOut error:', err);
       sessionStorage.removeItem('samteck_admin_session');
       setCurrentUser(null);
       toast.info('Signed Out', 'Admin session ended.');
+      navigate('/');
     }
   };
 
   const handleToggleAvailability = async () => {
-    const newStatus = !profile.openToWork;
+    const newStatus = !(profile?.openToWork);
     try {
-      setProfile((prev) => ({ ...prev, openToWork: newStatus }));
       await updateProfile({ openToWork: newStatus });
       if (newStatus) {
         toast.success('Status: Available for Work', 'Your portfolio now displays the active green availability indicator.');
@@ -247,7 +227,6 @@ function AppContent() {
 
   const handleSaveProfile = async (updated: Partial<Profile>) => {
     try {
-      setProfile((prev) => ({ ...prev, ...updated }));
       await updateProfile(updated);
       toast.success('Profile saved successfully', 'Public portfolio bio, titles, and social links updated.');
     } catch (err) {
@@ -259,19 +238,10 @@ function AppContent() {
   const handleSaveProject = async (proj: Omit<Project, 'id'> & { id?: string }) => {
     try {
       const isNew = !proj.id || proj.id.startsWith('proj-temp-');
-      const saved = await saveProject(proj);
-      setProjects((prev) => {
-        const idx = prev.findIndex((p) => p.id === saved.id);
-        if (idx >= 0) {
-          const next = [...prev];
-          next[idx] = saved;
-          return next;
-        }
-        return [saved, ...prev];
-      });
+      await saveProject(proj);
       toast.success(
         'Project saved successfully',
-        isNew ? `Project "${saved.name}" created.` : `Project "${saved.name}" updated.`
+        isNew ? `Project "${proj.name}" created.` : `Project "${proj.name}" updated.`
       );
     } catch (err) {
       console.error('Failed to save project:', err);
@@ -283,7 +253,6 @@ function AppContent() {
     try {
       const target = projects.find((p) => p.id === id);
       await deleteProject(id);
-      setProjects((prev) => prev.filter((p) => p.id !== id));
       toast.success('Project deleted', target ? `"${target.name}" was removed from your portfolio.` : 'Project deleted successfully.');
     } catch (err) {
       console.error('Failed to delete project:', err);
@@ -294,19 +263,10 @@ function AppContent() {
   const handleSaveService = async (svc: Omit<Service, 'id'> & { id?: string }) => {
     try {
       const isNew = !svc.id || svc.id.startsWith('srv-temp-');
-      const saved = await saveService(svc);
-      setServices((prev) => {
-        const idx = prev.findIndex((s) => s.id === saved.id);
-        if (idx >= 0) {
-          const next = [...prev];
-          next[idx] = saved;
-          return next;
-        }
-        return [...prev, saved];
-      });
+      await saveService(svc);
       toast.success(
         'Service saved successfully',
-        isNew ? `Service "${saved.title}" created.` : `Service "${saved.title}" updated.`
+        isNew ? `Service "${svc.title}" created.` : `Service "${svc.title}" updated.`
       );
     } catch (err) {
       console.error('Failed to save service:', err);
@@ -318,7 +278,6 @@ function AppContent() {
     try {
       const target = services.find((s) => s.id === id);
       await deleteService(id);
-      setServices((prev) => prev.filter((s) => s.id !== id));
       toast.success('Service deleted', target ? `"${target.title}" was removed.` : 'Service removed.');
     } catch (err) {
       console.error('Failed to delete service:', err);
@@ -329,15 +288,6 @@ function AppContent() {
   const handleSaveAchievement = async (ach: Omit<Achievement, 'id'> & { id?: string }) => {
     try {
       const saved = await saveAchievement(ach);
-      setAchievements((prev) => {
-        const idx = prev.findIndex((a) => a.id === saved.id);
-        if (idx >= 0) {
-          const next = [...prev];
-          next[idx] = saved;
-          return next;
-        }
-        return [...prev, saved];
-      });
       toast.success('Achievement saved successfully', `Achievement "${saved.title}" saved.`);
     } catch (err) {
       console.error('Failed to save achievement:', err);
@@ -348,7 +298,6 @@ function AppContent() {
   const handleDeleteAchievement = async (id: string) => {
     try {
       await deleteAchievement(id);
-      setAchievements((prev) => prev.filter((a) => a.id !== id));
       toast.success('Achievement deleted', 'Achievement milestone removed.');
     } catch (err) {
       console.error('Failed to delete achievement:', err);
@@ -359,15 +308,6 @@ function AppContent() {
   const handleSaveTestimonial = async (test: Omit<Testimonial, 'id'> & { id?: string }) => {
     try {
       const saved = await saveTestimonial(test);
-      setTestimonials((prev) => {
-        const idx = prev.findIndex((t) => t.id === saved.id);
-        if (idx >= 0) {
-          const next = [...prev];
-          next[idx] = saved;
-          return next;
-        }
-        return [...prev, saved];
-      });
       toast.success('Testimonial saved successfully', `Review from "${saved.clientName}" saved.`);
     } catch (err) {
       console.error('Failed to save testimonial:', err);
@@ -378,7 +318,6 @@ function AppContent() {
   const handleDeleteTestimonial = async (id: string) => {
     try {
       await deleteTestimonial(id);
-      setTestimonials((prev) => prev.filter((t) => t.id !== id));
       toast.success('Testimonial deleted', 'Client review removed.');
     } catch (err) {
       console.error('Failed to delete testimonial:', err);
@@ -389,15 +328,6 @@ function AppContent() {
   const handleSaveFaq = async (faq: Omit<Faq, 'id'> & { id?: string }) => {
     try {
       const saved = await saveFaq(faq);
-      setFaqs((prev) => {
-        const idx = prev.findIndex((f) => f.id === saved.id);
-        if (idx >= 0) {
-          const next = [...prev];
-          next[idx] = saved;
-          return next;
-        }
-        return [...prev, saved];
-      });
       toast.success('FAQ saved successfully', 'FAQ question and answer updated.');
     } catch (err) {
       console.error('Failed to save faq:', err);
@@ -408,7 +338,6 @@ function AppContent() {
   const handleDeleteFaq = async (id: string) => {
     try {
       await deleteFaq(id);
-      setFaqs((prev) => prev.filter((f) => f.id !== id));
       toast.success('FAQ deleted', 'FAQ entry removed.');
     } catch (err) {
       console.error('Failed to delete faq:', err);
@@ -419,9 +348,6 @@ function AppContent() {
   const handleToggleMessageRead = async (id: string, isRead: boolean) => {
     try {
       await updateSubmissionReadStatus(id, isRead);
-      setMessages((prev) =>
-        prev.map((m) => (m.id === id ? { ...m, isRead } : m))
-      );
       toast.info(isRead ? 'Marked as read' : 'Marked as unread');
     } catch (err) {
       console.error('Failed to update message status:', err);
@@ -432,7 +358,6 @@ function AppContent() {
   const handleDeleteMessage = async (id: string) => {
     try {
       await deleteContactSubmission(id);
-      setMessages((prev) => prev.filter((m) => m.id !== id));
       toast.success('Inquiry deleted', 'Client message removed.');
     } catch (err) {
       console.error('Failed to delete message:', err);
@@ -442,7 +367,6 @@ function AppContent() {
 
   const handleSaveSettings = async (updated: Partial<SiteSettings>) => {
     try {
-      setSettings((prev) => ({ ...prev, ...updated }));
       await updateSiteSettings(updated);
       toast.success('Settings saved successfully', 'SEO tags, brand configuration, and URLs updated.');
     } catch (err) {
@@ -454,7 +378,6 @@ function AppContent() {
   const handleResetDefaults = async () => {
     try {
       await seedDatabaseIfEmpty();
-      await loadPortfolioData();
       toast.success('Database restored to default showcase content');
     } catch (err) {
       console.error('Failed to reset database:', err);
@@ -463,8 +386,7 @@ function AppContent() {
   };
 
   const handleContactSubmit = async (data: Omit<ContactSubmission, 'id' | 'createdAt' | 'isRead'>) => {
-    const newSubmission = await saveContactSubmission(data);
-    setMessages((prev) => [newSubmission, ...prev]);
+    await saveContactSubmission(data);
   };
 
   const unreadCount = messages.filter((m) => !m.isRead).length;

@@ -2,7 +2,6 @@ import React from 'react';
 import { 
   X, 
   ExternalLink, 
-  Github, 
   CheckCircle2, 
   Calendar, 
   Layers, 
@@ -97,22 +96,12 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({ project, onClose, br
                 rel="noreferrer"
                 className="px-4 py-2 rounded-xl bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold flex items-center gap-2 shadow-lg shadow-orange-500/25 transition-all"
               >
-                <span>Live Demo</span>
+                <span>Live Preview</span>
                 <ExternalLink className="w-4 h-4" />
               </a>
             )}
 
-            {project.githubUrl && (
-              <a
-                href={project.githubUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="p-2.5 rounded-xl bg-[#061845] hover:bg-[#0B256B] border border-blue-900/50 text-slate-300 hover:text-white transition-all"
-                title="View Source Code on GitHub"
-              >
-                <Github className="w-5 h-5" />
-              </a>
-            )}
+
           </div>
         </div>
 

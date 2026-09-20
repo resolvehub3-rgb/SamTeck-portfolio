@@ -61,10 +61,10 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
   ];
 
   return (
-    <div className="min-h-screen bg-[#02091D] text-slate-200 flex flex-col lg:flex-row font-sans">
+    <div className="h-screen bg-[#02091D] text-slate-200 flex flex-col font-sans overflow-hidden">
       
       {/* Mobile Top Bar */}
-      <div className="lg:hidden bg-[#040E28] border-b border-blue-950 px-4 py-3.5 flex items-center justify-between z-30">
+      <div className="lg:hidden bg-[#040E28] border-b border-blue-950 px-4 py-3.5 flex items-center justify-between z-30 shrink-0">
         <div className="flex items-center gap-2.5">
           <BrandLogo size={28} variant="blue" />
           <span className="font-heading font-bold text-white text-sm">
@@ -90,13 +90,14 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
         </div>
       </div>
 
-      {/* Sidebar (Desktop & Mobile Drawer) */}
-      <aside
-        className={`fixed inset-y-0 left-0 z-40 w-64 bg-[#030C24] border-r border-blue-950/80 flex flex-col justify-between transition-transform duration-300 lg:translate-x-0 lg:static ${
-          mobileNavOpen ? 'translate-x-0' : '-translate-x-full'
-        }`}
-      >
-        <div>
+      <div className="flex flex-1 min-h-0">
+        {/* Sidebar (Desktop & Mobile Drawer) */}
+        <aside
+          className={`fixed inset-y-0 left-0 z-40 w-64 bg-[#030C24] border-r border-blue-950/80 flex flex-col justify-between transition-transform duration-300 lg:translate-x-0 ${
+            mobileNavOpen ? 'translate-x-0' : '-translate-x-full'
+          }`}
+        >
+        <div className="flex-1 overflow-y-auto">
           {/* Brand Header */}
           <div className="p-6 border-b border-blue-950/80 flex items-center justify-between">
             <Link to="/" className="flex items-center gap-3">
@@ -192,7 +193,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 min-w-0 flex flex-col min-h-screen overflow-y-auto">
+      <main className="flex-1 min-w-0 flex flex-col lg:ml-64 min-h-0 overflow-y-auto">
         
         {/* Top Header */}
         <header className="hidden lg:flex items-center justify-between px-8 py-4 bg-[#030C24]/60 border-b border-blue-950/80 backdrop-blur-md sticky top-0 z-20">
@@ -202,7 +203,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
               Authenticated Admin Console
             </span>
             <span className="text-xs text-slate-500 font-mono ml-2">
-              (Live PostgreSQL &amp; Firestore Connected)
+              (Firestore Realtime Connected)
             </span>
           </div>
 
@@ -223,6 +224,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
           {children}
         </div>
       </main>
+      </div>
 
     </div>
   );

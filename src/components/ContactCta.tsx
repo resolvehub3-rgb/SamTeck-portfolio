@@ -127,7 +127,7 @@ export const ContactCta: React.FC<ContactCtaProps> = ({ profile, isOpenModal, on
             {/* Middle: Direct Contact Info Chips */}
             <div className="lg:col-span-4 flex flex-col sm:flex-row lg:flex-col gap-4">
               <a
-                href={`mailto:${profile.email || 'hello@samteckdigital.com'}`}
+                href={`mailto:${profile.email || 'samteckdigital@gmail.com'}`}
                 className="flex items-center gap-3 p-3.5 rounded-xl bg-[#030E2D] border border-white/5 hover:border-[#FF6A00]/40 text-gray-200 hover:text-white transition-all group"
               >
                 <div className="w-10 h-10 rounded-lg bg-[#FF6A00]/10 flex items-center justify-center text-[#FF6A00] group-hover:scale-105 transition-transform">
@@ -136,7 +136,7 @@ export const ContactCta: React.FC<ContactCtaProps> = ({ profile, isOpenModal, on
                 <div className="min-w-0">
                   <div className="text-[11px] font-mono text-gray-400 uppercase">Email</div>
                   <div className="text-xs sm:text-sm font-semibold truncate text-white">
-                    {profile.email || 'hello@samteckdigital.com'}
+                    {profile.email || 'samteckdigital@gmail.com'}
                   </div>
                 </div>
               </a>
@@ -151,7 +151,7 @@ export const ContactCta: React.FC<ContactCtaProps> = ({ profile, isOpenModal, on
                 <div className="min-w-0">
                   <div className="text-[11px] font-mono text-gray-400 uppercase">Phone</div>
                   <div className="text-xs sm:text-sm font-semibold truncate text-white">
-                    {profile.phone || '+234 812 345 6789'}
+                    {profile.phone || '+233 (0) 59 434 5424'}
                   </div>
                 </div>
               </a>

@@ -8,8 +8,8 @@ export const defaultProfile: Profile = {
   heroHeadline: "Hi, I'm",
   heroDescription: 'I build scalable, high-performance digital products and cloud-native applications that solve real-world problems and create measurable impact.',
   bio: "I'm a passionate software developer and solutions architect with a strong foundation in full-stack web and cloud systems. I love turning ideas into clean, efficient, and scalable digital solutions. My focus is on building products that deliver real value and exceptional user experiences.",
-  email: 'hello@samteckdigital.com',
-  phone: '+234 812 345 6789',
+  email: 'samteckdigital@gmail.com',
+  phone: '+233 (0) 59 434 5424',
   location: 'Lagos, Nigeria & Remote',
   openToWork: true,
   profileImageUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=800', // high-res tech professional portrait matching CEO
@@ -286,6 +286,6 @@ export const defaultSiteSettings: SiteSettings = {
     { id: '1', platform: 'GitHub', url: 'https://github.com', iconName: 'Github', displayOrder: 1 },
     { id: '2', platform: 'LinkedIn', url: 'https://linkedin.com', iconName: 'Linkedin', displayOrder: 2 },
     { id: '3', platform: 'Twitter', url: 'https://twitter.com', iconName: 'Twitter', displayOrder: 3 },
-    { id: '4', platform: 'Email', url: 'mailto:hello@samteckdigital.com', iconName: 'Mail', displayOrder: 4 },
+    { id: '4', platform: 'Email', url: 'mailto:samteckdigital@gmail.com', iconName: 'Mail', displayOrder: 4 },
   ]
 };

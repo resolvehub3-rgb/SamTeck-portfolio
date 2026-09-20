@@ -120,7 +120,7 @@ export const About: React.FC<AboutProps> = ({ profile, onOpenContact }) => {
                 <div className="min-w-0">
                   <div className="text-[11px] font-mono text-gray-400 uppercase">Email</div>
                   <div className="text-sm font-semibold text-white truncate">
-                    {profile.email || 'hello@samteckdigital.com'}
+                    {profile.email || 'samteckdigital@gmail.com'}
                   </div>
                 </div>
               </div>

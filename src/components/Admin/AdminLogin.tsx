@@ -6,18 +6,14 @@ import {
   Mail, 
   ArrowLeft, 
   AlertCircle, 
-  Sparkles, 
   Loader2, 
   CheckCircle2,
-  KeyRound,
-  LogIn
+  KeyRound
 } from 'lucide-react';
 import { 
   signInWithPopup, 
   GoogleAuthProvider, 
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  signInAnonymously
+  signInWithEmailAndPassword
 } from 'firebase/auth';
 import { auth } from '../../lib/firebase';
 import { BrandLogo } from '../common/BrandLogo';
@@ -27,7 +23,7 @@ interface AdminLoginProps {
 }
 
 export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState('samteckdigital@gmail.com');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -51,25 +47,18 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
         });
       }
     } catch (err: unknown) {
-      console.warn('Google Sign-In note:', err);
+      console.error('Google Sign-In error:', err);
       const errorMsg = err instanceof Error ? err.message : '';
       if (errorMsg.includes('popup-closed-by-user') || errorMsg.includes('cancelled-popup-request')) {
         setError('Sign-in popup was closed before completing. Please try again.');
       } else if (errorMsg.includes('network-request-failed')) {
         setError('Network connection error. Please check your internet connection.');
-      } else if (errorMsg.includes('operation-not-allowed') || errorMsg.includes('unauthorized-domain')) {
-        // Fallback demo admin session
-        const demoUser = {
-          displayName: 'SamTeck Admin',
-          email: 'admin@samteckdigital.com',
-          photoURL: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=400',
-          uid: 'admin-demo-user'
-        };
-        if (onLoginSuccess) {
-          onLoginSuccess(demoUser);
-        }
+      } else if (errorMsg.includes('operation-not-allowed')) {
+        setError('Google sign-in is not enabled. Go to Firebase Console > Authentication > Sign-in method > Enable Google.');
+      } else if (errorMsg.includes('unauthorized-domain')) {
+        setError('This domain is not authorized. Go to Firebase Console > Authentication > Settings > Authorized domains and add your domain.');
       } else {
-        setError('Google sign-in popup encountered an issue. You can use the One-Click Admin button below.');
+        setError('Google sign-in failed. Make sure Google provider is enabled in Firebase Console > Authentication > Sign-in method.');
       }
     } finally {
       setLoading(false);
@@ -89,170 +78,30 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
       setError(null);
       setInfoMessage(null);
 
-      // Attempt sign in with existing credentials
-      try {
-        const res = await signInWithEmailAndPassword(auth, email.trim(), password);
-        if (res.user && onLoginSuccess) {
-          onLoginSuccess({
-            displayName: res.user.displayName || email.split('@')[0],
-            email: res.user.email,
-            uid: res.user.uid
-          });
-        }
-      } catch (signInErr: unknown) {
-        const signMsg = signInErr instanceof Error ? signInErr.message : '';
-
-        // If email auth provider is not enabled in Firebase Console, fallback to secure authenticated demo session
-        if (signMsg.includes('operation-not-allowed')) {
-          const demoUser = {
-            displayName: email.split('@')[0] || 'SamTeck Admin',
-            email: email.trim(),
-            photoURL: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=400',
-            uid: `admin-${Date.now()}`
-          };
-          if (onLoginSuccess) {
-            onLoginSuccess(demoUser);
-          }
-          return;
-        }
-
-        // If user not found, auto-create the initial admin account
-        if (signMsg.includes('user-not-found') || signMsg.includes('invalid-credential')) {
-          try {
-            const createRes = await createUserWithEmailAndPassword(auth, email.trim(), password);
-            if (createRes.user && onLoginSuccess) {
-              onLoginSuccess({
-                displayName: createRes.user.displayName || email.split('@')[0],
-                email: createRes.user.email,
-                uid: createRes.user.uid
-              });
-            }
-            setInfoMessage('Administrator account securely created and authenticated.');
-          } catch (createErr: unknown) {
-            const createMsg = createErr instanceof Error ? createErr.message : '';
-            if (createMsg.includes('weak-password')) {
-              setError('Password should be at least 6 characters.');
-            } else if (createMsg.includes('operation-not-allowed')) {
-              // Firebase project does not have Email provider toggled on yet -> activate demo admin session
-              const demoUser = {
-                displayName: email.split('@')[0] || 'SamTeck Admin',
-                email: email.trim(),
-                photoURL: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=400',
-                uid: `admin-${Date.now()}`
-              };
-              if (onLoginSuccess) {
-                onLoginSuccess(demoUser);
-              }
-            } else {
-              setError(createMsg || 'Authentication error. Please check your credentials.');
-            }
-          }
-        } else if (signMsg.includes('wrong-password')) {
-          setError('Incorrect password for this admin account.');
-        } else {
-          // If any other provider error, allow seamless admin access for testing
-          const demoUser = {
-            displayName: email.split('@')[0] || 'SamTeck Admin',
-            email: email.trim(),
-            photoURL: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=400',
-            uid: `admin-${Date.now()}`
-          };
-          if (onLoginSuccess) {
-            onLoginSuccess(demoUser);
-          }
-        }
+      const res = await signInWithEmailAndPassword(auth, email.trim(), password);
+      if (res.user && onLoginSuccess) {
+        onLoginSuccess({
+          displayName: res.user.displayName || email.split('@')[0],
+          email: res.user.email,
+          uid: res.user.uid
+        });
       }
     } catch (err: unknown) {
-      console.warn('Email Auth Note:', err);
-      // Fallback to local admin session
-      const demoUser = {
-        displayName: 'SamTeck Admin',
-        email: email.trim() || 'admin@samteckdigital.com',
-        uid: `admin-${Date.now()}`
-      };
-      if (onLoginSuccess) {
-        onLoginSuccess(demoUser);
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
+      console.error('Email Auth error:', err);
+      const signMsg = err instanceof Error ? err.message : '';
 
-  // Quick One-Click Administrator Auth
-  const handleQuickDemoAdmin = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      setEmail('admin@samteckdigital.com');
-      setPassword('samteck2026');
-
-      let authenticated = false;
-
-      // Try Firebase email auth
-      try {
-        const res = await signInWithEmailAndPassword(auth, 'admin@samteckdigital.com', 'samteck2026');
-        if (res.user && onLoginSuccess) {
-          onLoginSuccess({
-            displayName: res.user.displayName || 'SamTeck Admin',
-            email: res.user.email,
-            uid: res.user.uid
-          });
-        }
-        authenticated = true;
-      } catch (e1: unknown) {
-        const msg1 = e1 instanceof Error ? e1.message : '';
-        if (!msg1.includes('operation-not-allowed')) {
-          try {
-            const createRes = await createUserWithEmailAndPassword(auth, 'admin@samteckdigital.com', 'samteck2026');
-            if (createRes.user && onLoginSuccess) {
-              onLoginSuccess({
-                displayName: 'SamTeck Admin',
-                email: createRes.user.email,
-                uid: createRes.user.uid
-              });
-            }
-            authenticated = true;
-          } catch {}
-        }
-      }
-
-      // Try anonymous auth as secondary Firebase attempt
-      if (!authenticated) {
-        try {
-          const anonRes = await signInAnonymously(auth);
-          if (anonRes.user && onLoginSuccess) {
-            onLoginSuccess({
-              displayName: 'SamTeck Admin',
-              email: 'admin@samteckdigital.com',
-              uid: anonRes.user.uid
-            });
-          }
-          authenticated = true;
-        } catch {}
-      }
-
-      // Fallback to validated local admin session
-      if (!authenticated) {
-        const demoUser = {
-          displayName: 'SamTeck Admin',
-          email: 'admin@samteckdigital.com',
-          photoURL: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=400',
-          uid: 'samteck-primary-admin'
-        };
-        if (onLoginSuccess) {
-          onLoginSuccess(demoUser);
-        }
-      }
-    } catch (err: unknown) {
-      console.warn('Quick admin session initialization note:', err);
-      const demoUser = {
-        displayName: 'SamTeck Admin',
-        email: 'admin@samteckdigital.com',
-        photoURL: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=400',
-        uid: 'samteck-primary-admin'
-      };
-      if (onLoginSuccess) {
-        onLoginSuccess(demoUser);
+      if (signMsg.includes('operation-not-allowed')) {
+        setError('Email/password sign-in is not enabled. Go to Firebase Console > Authentication > Sign-in method > Enable Email/Password.');
+      } else if (signMsg.includes('user-not-found')) {
+        setError('No account found with this email. Go to Firebase Console > Authentication > Users > Add user to create your admin account.');
+      } else if (signMsg.includes('wrong-password') || signMsg.includes('invalid-credential')) {
+        setError('Incorrect email or password. Please try again.');
+      } else if (signMsg.includes('invalid-email')) {
+        setError('Please enter a valid email address.');
+      } else if (signMsg.includes('too-many-requests')) {
+        setError('Too many failed attempts. Please try again later.');
+      } else {
+        setError('Authentication failed. Make sure Email/Password provider is enabled in Firebase Console.');
       }
     } finally {
       setLoading(false);
@@ -295,6 +144,17 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
           </div>
         )}
 
+        {/* Setup Guide */}
+        <div className="p-3.5 rounded-xl bg-blue-500/10 border border-blue-500/30 text-blue-300 text-[11px] leading-relaxed mb-5">
+          <p className="font-semibold mb-1.5 text-blue-200">First time setup:</p>
+          <ol className="list-decimal list-inside space-y-1">
+            <li>Firebase Console &gt; Authentication &gt; Sign-in method</li>
+            <li>Enable <strong>Google</strong> and <strong>Email/Password</strong></li>
+            <li>Add <code className="bg-blue-900/40 px-1 rounded">localhost</code> to Authorized domains</li>
+            <li>Authentication &gt; Users &gt; Add user (email: <code className="bg-blue-900/40 px-1 rounded">samteckdigital@gmail.com</code>)</li>
+          </ol>
+        </div>
+
         {/* Primary Action: Google Single Sign-On */}
         <div className="space-y-4">
           <button
@@ -328,17 +188,6 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
             <span>Sign In with Google</span>
           </button>
 
-          {/* Quick Demo Credentials Button */}
-          <button
-            type="button"
-            onClick={handleQuickDemoAdmin}
-            disabled={loading}
-            className="w-full py-3 rounded-xl bg-gradient-to-r from-orange-500/20 to-amber-500/20 hover:from-orange-500/30 hover:to-amber-500/30 border border-orange-500/40 text-orange-300 hover:text-white text-xs font-bold flex items-center justify-center gap-2 transition-all shadow-md cursor-pointer"
-          >
-            <Sparkles className="w-4 h-4 text-orange-400" />
-            <span>Use One-Click Admin Account</span>
-          </button>
-
           <div className="relative flex items-center justify-center my-4">
             <div className="border-t border-blue-900/60 w-full" />
             <span className="bg-[#041235] px-3 text-[11px] font-medium text-slate-400 uppercase tracking-wider relative z-10">
@@ -359,7 +208,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="admin@samteckdigital.com"
+                  placeholder="samteckdigital@gmail.com"
                   className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#020B24] border border-blue-900/60 focus:border-orange-500 focus:outline-none text-white text-xs"
                 />
               </div>

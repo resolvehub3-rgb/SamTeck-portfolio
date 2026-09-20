@@ -6,3 +6,5 @@ coverage/
 *.log
 .env*
 !.env.example
+serviceAccountKey.json
+RULES_TO_PASTE.txt

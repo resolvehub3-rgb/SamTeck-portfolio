@@ -5,7 +5,6 @@ import {
   Linkedin, 
   Twitter, 
   Mail, 
-  Heart, 
   ArrowUp,
   Globe,
   Code
@@ -139,7 +138,7 @@ export const Footer: React.FC<FooterProps> = ({ profile, services, settings }) =
                     { id: '1', platform: 'GitHub', url: 'https://github.com', iconName: 'Github' },
                     { id: '2', platform: 'LinkedIn', url: 'https://linkedin.com', iconName: 'Linkedin' },
                     { id: '3', platform: 'Twitter', url: 'https://twitter.com', iconName: 'Twitter' },
-                    { id: '4', platform: 'Email', url: 'mailto:hello@samteckdigital.com', iconName: 'Mail' },
+                    { id: '4', platform: 'Email', url: 'mailto:samteckdigital@gmail.com', iconName: 'Mail' },
                   ]
               ).map((soc, idx) => (
                 <a
@@ -166,7 +165,7 @@ export const Footer: React.FC<FooterProps> = ({ profile, services, settings }) =
 
           <div className="flex items-center gap-4">
             <span className="flex items-center gap-1 text-gray-400">
-              Designed & Built with <Heart className="w-3.5 h-3.5 text-[#FF6A00] fill-[#FF6A00]" /> by {profile.name || 'SamTeck Digital'}
+              Design & Built by SamTeck Digital Team
             </span>
 
             <button

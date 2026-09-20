@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { 
   ArrowRight, 
   ExternalLink, 
-  Github, 
   Sparkles, 
   Layers, 
   FolderGit2,
@@ -173,7 +172,7 @@ export const Projects: React.FC<ProjectsProps> = ({ projects }) => {
                         rel="noreferrer"
                         className="inline-flex items-center gap-1 font-semibold text-[#FF6A00] hover:text-[#ff9d4d] transition-colors"
                       >
-                        <span>Live Demo</span>
+                        <span>Live Preview</span>
                         <ArrowRight className="w-3.5 h-3.5" />
                       </a>
                     ) : (
@@ -186,17 +185,7 @@ export const Projects: React.FC<ProjectsProps> = ({ projects }) => {
                       </button>
                     )}
 
-                    {project.githubUrl && (
-                      <a
-                        href={project.githubUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-gray-400 hover:text-white transition-colors p-1 rounded-md hover:bg-white/5"
-                        title="GitHub Repository"
-                      >
-                        <Github className="w-4 h-4" />
-                      </a>
-                    )}
+
                   </div>
                 </div>
               </div>
